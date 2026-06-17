@@ -5,8 +5,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Autoriser explicitement ton frontend local
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:5173/'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'https://gestion-de-boutique-frontend.netlify.app',
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -14,8 +16,8 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 86400,
+    'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];
 
