@@ -12,11 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE stock_movements MODIFY COLUMN type ENUM('entree', 'sortie', 'retour')");
+        // Postgres ne supporte pas MODIFY COLUMN (syntaxe MySQL).
+        // On remplace le type ENUM en recréant le type puis en le rebranchant.
+        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE TEXT");
+        DB::statement("DROP TYPE IF EXISTS stock_movements_type_enum");
+        DB::statement("CREATE TYPE stock_movements_type_enum AS ENUM ('entree', 'sortie', 'retour')");
+        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING type::text::stock_movements_type_enum");
+
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE stock_movements MODIFY COLUMN type ENUM('entree', 'sortie')");
+        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE TEXT");
+        DB::statement("DROP TYPE IF EXISTS stock_movements_type_enum");
+        DB::statement("CREATE TYPE stock_movements_type_enum AS ENUM ('entree', 'sortie')");
+        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING type::text::stock_movements_type_enum");
+
     }
 };
