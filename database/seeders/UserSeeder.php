@@ -10,24 +10,14 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $users = [
-            [
-                'name' => 'Wylfred dev',
-                'email' => 'wylfreddev@gmail.com',
-                'password' => 'superadmin123!',
-                'role' => User::ROLE_SUPER_ADMIN,
-            ],
-        ];
-
-        foreach ($users as $user) {
-            User::updateOrCreate(
-                ['email' => $user['email']],
-                [
-                    'name' => $user['name'],
-                    'password' => Hash::make($user['password']),
-                    'role' => $user['role'],
-                ]
-            );
+        if (!User::where('email', 'superadmin@cachet.com')->exists()) {
+            User::create([
+                'name'     => 'Wylfred dev',
+                'email'    => 'wylfreddev@gmail.com',
+                'password' => Hash::make('wylfreddev'),
+                'role'     => 'super_admin',
+                'is_active' => true,
+            ]);
         }
     }
 }
