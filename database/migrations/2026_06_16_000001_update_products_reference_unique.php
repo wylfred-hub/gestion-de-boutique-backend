@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,11 +14,13 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             // Suppression de l'unicité globale sur reference (genère les collisions entre organisations)
-
-            $table->dropUnique('products_reference_unique');
+            // Note: le nom de contrainte peut ne pas exister selon l'état réel de la DB.
+            // On supprime via SQL 'IF EXISTS' pour éviter un échec de migration.
+            DB::statement('ALTER TABLE products DROP CONSTRAINT IF EXISTS products_reference_unique');
 
             // Ajout de l'unicité composite par organisation
-            $table->unique(['organization_id', 'reference'], 'products_organization_reference_unique');
+            DB::statement('ALTER TABLE products ADD CONSTRAINT products_organization_reference_unique UNIQUE (organization_id, reference)');
+
         });
     }
 
