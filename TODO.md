@@ -6,3 +6,4 @@
 - [ ] Run migrations to validate (e.g., php artisan migrate or migrate:fresh depending on workflow).
 - [x] Fix migration 2026_06_16_201900_add_retour_to_stock_movements_type.php: fixed Postgres ENUM operator mismatch error.
 - [ ] Re-run failed deploy step / verify no further SQLSTATE errors.
+- [x] Fix migration 2026_06_17_000001_fix_subscriptions_organization_fk.php: handle "Duplicate column" error by checking column existence and ensuring foreign key.
