@@ -17,8 +17,9 @@ return new class extends Migration
         DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE TEXT");
         DB::statement("DROP TYPE IF EXISTS stock_movements_type_enum");
         DB::statement("CREATE TYPE stock_movements_type_enum AS ENUM ('entree', 'sortie', 'retour')");
-        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING type::text::stock_movements_type_enum");
-
+        DB::statement(
+            "ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING (type::text)::stock_movements_type_enum"
+        );
     }
 
     public function down(): void
@@ -26,7 +27,9 @@ return new class extends Migration
         DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE TEXT");
         DB::statement("DROP TYPE IF EXISTS stock_movements_type_enum");
         DB::statement("CREATE TYPE stock_movements_type_enum AS ENUM ('entree', 'sortie')");
-        DB::statement("ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING type::text::stock_movements_type_enum");
-
+        DB::statement(
+            "ALTER TABLE stock_movements ALTER COLUMN type TYPE stock_movements_type_enum USING (type::text)::stock_movements_type_enum"
+        );
     }
 };
+
