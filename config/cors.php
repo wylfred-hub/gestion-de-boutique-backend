@@ -7,6 +7,7 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',
+        'https://wyl-shop.netlify.app',
         'https://gestion-de-boutique-frontend.netlify.app',
     ],
 
