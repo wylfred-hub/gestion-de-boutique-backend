@@ -24,7 +24,7 @@ class SaleService
         $last = Sale::where('organization_id', $orgId)
             ->whereYear('created_at', $year)
             ->where('sale_number', 'like', $prefix . '%')
-            ->orderByRaw('CAST(SUBSTRING(sale_number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->orderByRaw('CAST(SUBSTRING(sale_number, ' . (strlen($prefix) + 1) . ') AS INTEGER) DESC')
             ->value('sale_number');
 
         $next = $last
