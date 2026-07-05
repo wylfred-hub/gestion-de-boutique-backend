@@ -33,17 +33,22 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Charger les organisations avec le rôle pivot de l'utilisateur dans chacune
+        $organizations = $user->isSuperAdmin()
+            ? \App\Models\Organization::where('is_active', true)->get()
+            : $user->organizations()->wherePivot('is_active', true)->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Connexion réussie.',
             'data'    => [
-                'user'       => new UserResource($user),
-                'token'      => $token,
-                'token_type' => 'Bearer',
+                'user'          => new UserResource($user),
+                'organizations' => \App\Http\Resources\OrganizationResource::collection($organizations),
+                'token'         => $token,
+                'token_type'    => 'Bearer',
             ],
         ], 200);
     }
-
     
     public function logout(): JsonResponse
     {
