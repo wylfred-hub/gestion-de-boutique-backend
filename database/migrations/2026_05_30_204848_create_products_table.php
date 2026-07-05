@@ -13,17 +13,20 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('organization_id')      // ← AJOUT OBLIGATOIRE
+
+            $table->foreignId('organization_id')
                 ->constrained('organizations')
                 ->onDelete('cascade');
+
             $table->foreignId('category_id')
                 ->constrained('categories')
                 ->onDelete('restrict');
+
             $table->string('name', 150);
-            // Référence unique par organisation (utilisée par le modèle Product)
+
+            // Référence unique par organisation (pas globale)
             $table->string('reference', 255);
             $table->unique(['organization_id', 'reference']);
-
 
             $table->text('description')->nullable();
             $table->decimal('purchase_price', 10, 2)->default(0.00);

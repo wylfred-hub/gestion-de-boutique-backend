@@ -132,6 +132,59 @@ class OrganizationController extends Controller
     }
 
     /**
+     * POST /api/v1/organizations/{organization}/members/create
+     * Créer un utilisateur (ou réutiliser un compte existant par email)
+     * et l'attacher à l'organisation avec un rôle
+     */
+    public function storeMember(Request $request, Organization $organization)
+    {
+        $this->authorize('manageMembers', $organization);
+
+        $validated = $request->validate([
+            'name'     => 'required_without:existing_email|string|max:150',
+            'email'    => 'required|email|max:150',
+            'password' => 'required_without:existing_email|string|min:8',
+            'role'     => 'required|in:owner,admin,vendeur',
+        ]);
+
+        // Vérifier si un compte existe déjà avec cet email
+        $user = User::where('email', $validated['email'])->first();
+
+        if ($user) {
+            // L'utilisateur existe déjà : on ne crée rien, on vérifie juste qu'il n'est pas déjà dans l'org
+            if ($organization->users()->where('user_id', $user->id)->exists()) {
+                return response()->json([
+                    'message' => 'Cet utilisateur est déjà dans l\'organisation',
+                ], 422);
+            }
+        } else {
+            // Nouvel utilisateur : name et password deviennent obligatoires
+            $request->validate([
+                'name'     => 'required|string|max:150',
+                'password' => 'required|string|min:8',
+            ]);
+
+            $user = User::create([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
+        }
+
+        $organization->users()->attach($user->id, [
+            'role'      => $validated['role'],
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'message' => $user->wasRecentlyCreated
+                ? 'Utilisateur créé et ajouté à l\'organisation'
+                : 'Utilisateur existant ajouté à l\'organisation',
+            'user'    => new UserResource($user),
+        ], 201);
+    }
+
+    /**
      * POST /api/v1/organizations/{id}/members
      * Ajouter un user à une organisation (admin/owner seulement)
      */

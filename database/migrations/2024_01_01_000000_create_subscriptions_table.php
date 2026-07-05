@@ -6,19 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            // NOTE: FK vers organizations est ajouté plus tard via une migration de correction
-            // pour éviter l’erreur au déploiement quand la table organizations n’existe pas encore.
-            $table->unsignedBigInteger('organization_id');
+
+            $table->foreignId('organization_id')
+                ->constrained('organizations')
+                ->onDelete('cascade');
+
             $table->decimal('amount', 15, 2);
             $table->enum('status', ['paid', 'pending', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('subscriptions');

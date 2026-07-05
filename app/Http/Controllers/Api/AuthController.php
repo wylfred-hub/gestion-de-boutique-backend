@@ -12,6 +12,38 @@ use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
+    // public function login(LoginRequest $request): JsonResponse
+    // {
+    //     $user = \App\Models\User::where('email', $request->email)->first();
+
+    //     if (!$user || !Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Email ou mot de passe incorrect.',
+    //         ], 401);
+    //     }
+
+    //     if (!$user->is_active) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Votre compte est désactivé. Contactez l\'administrateur.',
+    //         ], 403);
+    //     }
+
+    //     $user->tokens()->delete();
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Connexion réussie.',
+    //         'data'    => [
+    //             'user'       => new UserResource($user),
+    //             'token'      => $token,
+    //             'token_type' => 'Bearer',
+    //         ],
+    //     ], 200);
+    // }
+
     public function login(LoginRequest $request): JsonResponse
     {
         $user = \App\Models\User::where('email', $request->email)->first();
@@ -33,18 +65,23 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Charger les organisations avec le rôle pivot de l'utilisateur dans chacune
+        $organizations = $user->isSuperAdmin()
+            ? \App\Models\Organization::where('is_active', true)->get()
+            : $user->organizations()->wherePivot('is_active', true)->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Connexion réussie.',
             'data'    => [
-                'user'       => new UserResource($user),
-                'token'      => $token,
-                'token_type' => 'Bearer',
+                'user'          => new UserResource($user),
+                'organizations' => \App\Http\Resources\OrganizationResource::collection($organizations),
+                'token'         => $token,
+                'token_type'    => 'Bearer',
             ],
         ], 200);
     }
 
-    
     public function logout(): JsonResponse
     {
         auth()->user()->currentAccessToken()->delete();
@@ -55,7 +92,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    
+
     public function me(): JsonResponse
     {
         return response()->json([
@@ -64,7 +101,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    
+
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $user = auth()->user();
