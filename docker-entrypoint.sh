@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "==> Checking PHP extensions..."
+php -m | grep -i pgsql || echo "!!! pgsql extensions NOT found !!!"
+php -r "var_dump(PDO::getAvailableDrivers());"
+
 echo "==> Running migrations..."
 php artisan migrate --force
 
