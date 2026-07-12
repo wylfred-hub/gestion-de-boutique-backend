@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
             ['email' => 'wylfreddev@gmail.com'], // critère de recherche
             [
                 'name'      => 'Wylfred dev',
-                'password'  => Hash::make('wylfreddev'),
+                'password'  => Hash::make('wylfreddev123'),
                 'role'      => 'super_admin',
                 'is_active' => true,
             ]
