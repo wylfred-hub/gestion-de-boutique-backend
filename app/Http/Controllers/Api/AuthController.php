@@ -87,6 +87,10 @@ class AuthController extends Controller
                 'organizations' => \App\Http\Resources\OrganizationResource::collection($organizations),
                 'token'         => $token,
                 'token_type'    => 'Bearer',
+                'user'          => new UserResource($user),
+                'organizations' => \App\Http\Resources\OrganizationResource::collection($organizations),
+                'token'         => $token,
+                'token_type'    => 'Bearer',
             ],
         ], 200);
     }
@@ -143,3 +147,4 @@ class AuthController extends Controller
         ], 200);
     }
 }
+
