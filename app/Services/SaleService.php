@@ -157,6 +157,43 @@ class SaleService
                 throw new Exception('Seules les ventes encours peuvent être modifiées.');
             }
 
+            $updateData = [];
+
+            if (array_key_exists('client_id', $data)) {
+                $updateData['client_id'] = $data['client_id'];
+            }
+
+            if (array_key_exists('discount_type', $data)) {
+                $updateData['discount_type'] = $data['discount_type'];
+            }
+
+            if (array_key_exists('discount_value', $data)) {
+                $updateData['discount_value'] = $data['discount_value'] ?? 0;
+            }
+
+            if (array_key_exists('notes', $data)) {
+                $updateData['notes'] = $data['notes'];
+            }
+
+            if (!array_key_exists('items', $data)) {
+                if (array_key_exists('discount_type', $data) || array_key_exists('discount_value', $data)) {
+                    $updateData['subtotal'] = $sale->subtotal;
+                    $updateData['total_amount'] = $this->calculerTotalVente(
+                        $updateData['subtotal'],
+                        $updateData['discount_type'] ?? $sale->discount_type,
+                        array_key_exists('discount_value', $data)
+                            ? $updateData['discount_value']
+                            : $sale->discount_value
+                    );
+                }
+
+                if (!empty($updateData)) {
+                    $sale->update($updateData);
+                }
+
+                return $sale->fresh()->load(['client', 'user', 'items.product']);
+            }
+
             // Réintégrer stock anciens items
             foreach ($sale->items as $item) {
                 $product = Product::find($item->product_id);
@@ -183,14 +220,14 @@ class SaleService
 
             foreach ($data['items'] as $item) {
                 $totalItem = $this->calculerTotalItem(
-                    $item['quantity'],
-                    $item['unit_price'],
+                    $item['quantity'], 
+                    $item['unit_price'], 
                     $item['discount_type']  ?? null,
                     $item['discount_value'] ?? 0
                 );
 
-                $subtotal    += $totalItem;
-                $itemsData[]  = [
+                $subtotal   += $totalItem;
+                $itemsData[] = [
                     'product_id'     => $item['product_id'],
                     'quantity'       => $item['quantity'],
                     'unit_price'     => $item['unit_price'],
@@ -206,14 +243,10 @@ class SaleService
                 $data['discount_value'] ?? 0
             );
 
-            $sale->update([
-                'client_id'      => $data['client_id']      ?? $sale->client_id,
-                'discount_type'  => $data['discount_type']  ?? null,
-                'discount_value' => $data['discount_value'] ?? 0,
-                'subtotal'       => $subtotal,
-                'total_amount'   => $totalAmount,
-                'notes'          => $data['notes']          ?? $sale->notes,
-            ]);
+            $sale->update(array_merge($updateData, [
+                'subtotal'      => $subtotal,
+                'total_amount'  => $totalAmount,
+            ]));
 
             foreach ($itemsData as $itemData) {
                 $sale->items()->create($itemData);
@@ -223,7 +256,7 @@ class SaleService
                 $product = Product::find($itemData['product_id']);
                 $this->stockService->sortie(
                     $product,
-                    $itemData['quantity'],
+                    $itemData['quantity'], 
                     'Vente ' . $sale->sale_number,
                     $sale->id,
                     'sale'

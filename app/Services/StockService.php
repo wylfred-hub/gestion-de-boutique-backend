@@ -39,6 +39,7 @@ class StockService
         // Enregistrer le mouvement
         // @phpstan-ignore-next-line
         return StockMovement::create([
+            'organization_id'  => $product->organization_id,
             'product_id'       => $product->id,
             'user_id'          => auth()->id(),
             'type'             => $type,

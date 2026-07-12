@@ -182,7 +182,7 @@ class SaleController extends Controller
     }
 
     // ─── POST /api/v1/sales/{id}/return ───────────────
-    public function return(SaleReturnRequest $request, int $id): JsonResponse
+    public function returnSale(SaleReturnRequest $request, int $id): JsonResponse
     {
         $sale = Sale::forCurrentOrganization()->with('items')->find($id);
 

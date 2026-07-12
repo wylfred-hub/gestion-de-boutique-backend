@@ -70,6 +70,15 @@ class AuthController extends Controller
             ? \App\Models\Organization::where('is_active', true)->get()
             : $user->organizations()->wherePivot('is_active', true)->get();
 
+        // Initialiser l'organisation courante (session) si l'utilisateur a au moins une org active.
+        // Pour le super_admin, tu as indiqué qu'il n'est relié à aucune organisation via la table pivot,
+        // donc on évite de forcer une sélection.
+        // Les actions côté front doivent envoyer X-Organization-ID ou appeler l'endpoint de sélection.
+        if (!$user->isSuperAdmin() && $organizations->isNotEmpty()) {
+            session(['current_organization_id' => $organizations->first()->id]);
+        }
+
+
         return response()->json([
             'success' => true,
             'message' => 'Connexion réussie.',

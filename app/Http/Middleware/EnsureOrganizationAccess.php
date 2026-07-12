@@ -60,12 +60,17 @@ class EnsureOrganizationAccess
         }
 
         // Si l'utilisateur n'a aucune organisation
+        // Cas super_admin : ne pas bloquer et ne pas forcer de sélection (laisser le front gérer).
         if (empty($authorizedOrgIds)) {
-            // Pas de logout ici : on veut une erreur JSON 403 pour les appels API.
+            if ($isSuperAdmin) {
+                return $next($request);
+            }
+
             return response()->json([
                 'message' => 'Accès refusé. Vous n\'êtes rattaché à aucune organisation.'
             ], 403);
         }
+
 
         // Si pas d'organisation identifiée, on prend la première par défaut
         if (!$currentOrgId) {
