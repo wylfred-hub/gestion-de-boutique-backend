@@ -25,7 +25,9 @@ RUN docker-php-ext-install \
     pdo_pgsql \
     pgsql \
     bcmath \
-    zip
+    zip \
+    && docker-php-ext-enable pdo_pgsql pgsql \
+    && php -m | grep -i pgsql
 
 # 4. Récupérer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
